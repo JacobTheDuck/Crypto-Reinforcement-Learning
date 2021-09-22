@@ -42,10 +42,10 @@ Reinforcement learning is.... (short history, definition, common uses etc.)
 \subsection{2.1}
 It is an off-policy TD control algorithm. For this policy, it is the agent's goal to obtain the ideal state-action function defined by
 
-Q(S_{t}, A_{t}) \leftarrow Q(S_{t}, A_{t}) + \alpha[R_{t+1} + \gamma maxQ(S_{t+1, a} - Q(S_{t}, A_{t})
+Q(S\_{t}, A\_{t}) $\leftarrow$ Q(S\_{t}, A\_{t}) + $\alpha$[R\_{t+1} + $\gamma$ maxQ(S\_{t+1, a} - Q(S\_{t}, A\_{t})
 	
 
-in which the learning rate is defined as \alpha. The immediate reward plus the discount factor is defined as, [R_{t+1} + \gamma maxQ(S_{t+1, a}. The actual Q-value is defined as Q(S_{t}, A_{t}).
+in which the learning rate is defined as $\alpha$. The immediate reward plus the discount factor is defined as, [R\_{t+1} + $\gamma$ maxQ(S\_{t+1, a}. The actual Q-value is defined as Q(S\_{t}, A\_{t}).
 In the approach, each action is mapped to a table defined as a Q-table. This table initially holds a set of null or zero values. As the agent takes actions the state-action pair value is updated by the function defined above. For correctness, the values will be updated every time state-action pairs are visited. 
 
 \subsection{2.2} 
