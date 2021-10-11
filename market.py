@@ -14,12 +14,25 @@ class Market_Data():
         # Get the data set
         self.data = yf.download(tickers=ticker, period=period, interval=interval)
 
+
+    # Print the table
+    def print_data(self):
+        print(self.data)
+
+
     def bollinger_bands(self):
-        sma = data['Close'].rolling
-        # std = prices.rolling(rate).std()
-        # bollinger_up = sma + std * 2 # Calculate top band
-        # bollinger_down = sma - std * 2 # Calculate bottom band
-        #return bollinger_up, bollinger_down
+        # 20 day sma
+        #self.data['20SMA'] = data['Close'].rolling(20).mean()
+        #std = data['20SMA'].rolling(10).std()
+
+        # Calculate Bands
+        #bollinger_uppper = sma + std * 2
+        #bollinger_lower = sma - std * 2 
+
+        # Set the bands in the table
+        #self.data['BollingerU'] = bollinger_uppper
+        #self.data['BollingerL'] = bollinger_lower
+        pass
 
     
     def create_figure(self):
@@ -33,9 +46,9 @@ class Market_Data():
                         low=self.data['Low'],
                         close=self.data['Close'], name = 'market data'))
 
-        #Add Moving average on the graph
-        # figure.add_trace(go.Scatter(x=self.data.index, y= self.data['MA20'],line=dict(color='blue', width=1.5), name = 'Long Term MA'))
-        # figure.add_trace(go.Scatter(x=self.data.index, y= self.data['MA5'],line=dict(color='orange', width=1.5), name = 'Short Term MA'))
+        #Add Bollinger on the graph
+        #figure.add_trace(go.Scatter(x=self.data.index, y= self.data['BollingerU'], line=dict(color='blue', width=1.5), name = 'Upper Bollinger'))
+        #figure.add_trace(go.Scatter(x=self.data.index, y= self.data['BollingerL'], line=dict(color='orange', width=1.5), name = 'Lower Bollinger'))
 
         #Updating X axis and graph
         # X-Axes
@@ -61,5 +74,11 @@ class Market_Data():
 
 if __name__ == '__main__':
     data = Market_Data('BTC-USD', '8d', '90m')
+
+    data.print_data()
+
+    data.bollinger_bands()
+
+    data.print_data()
 
     data.create_figure()
