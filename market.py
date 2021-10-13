@@ -42,6 +42,22 @@ class Market_Data():
         self.figure.add_trace(go.Scatter(x=self.data.index, y= self.data['BollingerU'], line=dict(color='blue', width=1.5), name = 'Upper Bollinger'))
         self.figure.add_trace(go.Scatter(x=self.data.index, y= self.data['BollingerL'], line=dict(color='orange', width=1.5), name = 'Lower Bollinger'))
 
+    # MACD
+    def macd(self):
+
+        exp1 = self.data['Close'].ewm(span=12, adjust=False).mean()
+        exp2 = self.data['Close'].ewm(span=26, adjust=False).mean()
+
+        macd = exp1-exp2
+        exp3 = macd.ewm(span=9, adjust=False).mean()
+
+        self.data['MACD'] = macd
+
+        self.figure.add_trace(go.Scatter(x=self.data.index, y= exp3, line=dict(color='green', width=1.5), name = 'EXPMACD'))
+        self.figure.add_trace(go.Scatter(x=self.data.index, y= self.data['MACD'], line=dict(color='purple', width=1.5), name = 'MACD'))
+
+
+
 
     def rsi(self, periods=14, simple=True):
         
@@ -110,13 +126,9 @@ class Market_Data():
 if __name__ == '__main__':
     data = Market_Data('BTC-USD', '8d', '90m')
 
-    data.print_data()
-
     data.bollinger_bands()
-    data.rsi(simple=False)
-
-    data.print_data()
-
+    # data.rsi(simple=False)
+    data.macd()
 
     data.create_figure()
     data.show_figure()
