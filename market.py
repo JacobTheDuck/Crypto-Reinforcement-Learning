@@ -22,17 +22,18 @@ class Market_Data():
 
     def bollinger_bands(self):
         # 20 day sma
-        #self.data['20SMA'] = data['Close'].rolling(20).mean()
-        #std = data['20SMA'].rolling(10).std()
+        self.data['20SMA'] = self.data['Close'].rolling(20).mean()
+        std = self.data['20SMA'].rolling(10).std()
+
+        sma = self.data['20SMA']
 
         # Calculate Bands
-        #bollinger_uppper = sma + std * 2
-        #bollinger_lower = sma - std * 2 
+        bollinger_uppper = sma + std * 2
+        bollinger_lower = sma - std * 2 
 
         # Set the bands in the table
-        #self.data['BollingerU'] = bollinger_uppper
-        #self.data['BollingerL'] = bollinger_lower
-        pass
+        self.data['BollingerU'] = bollinger_uppper
+        self.data['BollingerL'] = bollinger_lower
 
     
     def create_figure(self):
@@ -47,8 +48,8 @@ class Market_Data():
                         close=self.data['Close'], name = 'market data'))
 
         #Add Bollinger on the graph
-        #figure.add_trace(go.Scatter(x=self.data.index, y= self.data['BollingerU'], line=dict(color='blue', width=1.5), name = 'Upper Bollinger'))
-        #figure.add_trace(go.Scatter(x=self.data.index, y= self.data['BollingerL'], line=dict(color='orange', width=1.5), name = 'Lower Bollinger'))
+        figure.add_trace(go.Scatter(x=self.data.index, y= self.data['BollingerU'], line=dict(color='blue', width=1.5), name = 'Upper Bollinger'))
+        figure.add_trace(go.Scatter(x=self.data.index, y= self.data['BollingerL'], line=dict(color='orange', width=1.5), name = 'Lower Bollinger'))
 
         #Updating X axis and graph
         # X-Axes
