@@ -35,6 +35,9 @@ class Market_Data():
         self.data['BollingerU'] = bollinger_uppper
         self.data['BollingerL'] = bollinger_lower
 
+    def rsi(self):
+        pass
+
     
     def create_figure(self):
         #Create figure
@@ -69,8 +72,17 @@ class Market_Data():
             )
         )
 
+        return figure
+
+
+    def show_figure(self, figure):
         # Present figure
         figure.show()
+
+    
+    def get_table_values(self):
+        return self.data
+
 
 
 if __name__ == '__main__':
@@ -82,4 +94,10 @@ if __name__ == '__main__':
 
     data.print_data()
 
-    data.create_figure()
+
+    figure = data.create_figure()
+    data.show_figure(figure)
+
+    
+
+    print(data.get_table_values())
