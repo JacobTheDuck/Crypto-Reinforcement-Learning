@@ -2,6 +2,7 @@ import numpy as np
 import pandas as pd
 import yfinance as yf
 import plotly.graph_objs as go
+from plotly.subplots import make_subplots
 
 class Market_Data():
 
@@ -14,8 +15,10 @@ class Market_Data():
         # Get the data set
         self.data = yf.download(tickers=ticker, period=period, interval=interval)
 
-        #Create figure
-        self.figure = go.Figure()
+        # Create figure
+        self.figure1 = go.Figure()
+        self.figure2 = go.Figure()
+        self.figure3 = go.Figure()
 
 
     # Print the table
@@ -39,8 +42,8 @@ class Market_Data():
         self.data['BollingerL'] = bollinger_lower
 
         #Add Bollinger on the graph
-        self.figure.add_trace(go.Scatter(x=self.data.index, y= self.data['BollingerU'], line=dict(color='blue', width=1.5), name = 'Upper Bollinger'))
-        self.figure.add_trace(go.Scatter(x=self.data.index, y= self.data['BollingerL'], line=dict(color='orange', width=1.5), name = 'Lower Bollinger'))
+        self.figure1.add_trace(go.Scatter(x=self.data.index, y= self.data['BollingerU'], line=dict(color='blue', width=1.5), name = 'Upper Bollinger'))
+        self.figure1.add_trace(go.Scatter(x=self.data.index, y= self.data['BollingerL'], line=dict(color='orange', width=1.5), name = 'Lower Bollinger'))
 
     # MACD
     def macd(self):
@@ -53,12 +56,11 @@ class Market_Data():
 
         self.data['MACD'] = macd
 
-        self.figure.add_trace(go.Scatter(x=self.data.index, y= exp3, line=dict(color='green', width=1.5), name = 'EXPMACD'))
-        self.figure.add_trace(go.Scatter(x=self.data.index, y= self.data['MACD'], line=dict(color='purple', width=1.5), name = 'MACD'))
+        self.figure2.add_trace(go.Scatter(x=self.data.index, y= exp3, line=dict(color='green', width=1.5), name = 'EXPMACD'))
+        self.figure2.add_trace(go.Scatter(x=self.data.index, y= self.data['MACD'], line=dict(color='purple', width=1.5), name = 'MACD'))
 
 
-
-
+    # RSI can be set to simple or expontinal rsi
     def rsi(self, periods=14, simple=True):
         
         closing_delta = self.data['Close'].diff()
@@ -81,13 +83,13 @@ class Market_Data():
 
         self.data['RSI'] = rsi
 
-        self.figure.add_trace(go.Scatter(x=self.data.index, y= self.data['RSI'], line=dict(color='purple', width=1.5), name = 'RSI'))
+        self.figure3.add_trace(go.Scatter(x=self.data.index, y= self.data['RSI'], line=dict(color='grey', width=1.5), name = 'RSI'))
 
     
     def create_figure(self):
 
         # Create the candle sticks
-        self.figure.add_trace(go.Candlestick(x=self.data.index,
+        self.figure1.add_trace(go.Candlestick(x=self.data.index,
                         open=self.data['Open'],
                         high=self.data['High'],
                         low=self.data['Low'],
@@ -96,7 +98,7 @@ class Market_Data():
 
         #Updating X axis and graph
         # X-Axes
-        self.figure.update_xaxes(
+        self.figure1.update_xaxes(
             # This creates a range slider
             rangeslider_visible=True,
             rangeselector=dict(
@@ -115,7 +117,9 @@ class Market_Data():
 
     def show_figure(self):
         # Present figure
-        self.figure.show()
+        self.figure1.show()
+        self.figure2.show()
+        self.figure3.show()
 
     
     def get_table_values(self):
@@ -127,7 +131,7 @@ if __name__ == '__main__':
     data = Market_Data('BTC-USD', '8d', '90m')
 
     data.bollinger_bands()
-    # data.rsi(simple=False)
+    data.rsi(simple=False)
     data.macd()
 
     data.create_figure()
