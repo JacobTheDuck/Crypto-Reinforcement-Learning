@@ -56,6 +56,7 @@ class Market_Data():
 
         self.data['MACD'] = macd
 
+        # Add to graph
         self.figure2.add_trace(go.Scatter(x=self.data.index, y= exp3, line=dict(color='green', width=1.5), name = 'EXPMACD'))
         self.figure2.add_trace(go.Scatter(x=self.data.index, y= self.data['MACD'], line=dict(color='purple', width=1.5), name = 'MACD'))
 
@@ -78,11 +79,13 @@ class Market_Data():
             moving_average_up = up.rolling(window = periods).mean()
             moving_average_down = down.rolling(window = periods).mean()
         
+
         rsi = moving_average_up / moving_average_down
         rsi = 100 - (100/(1 + rsi))
 
         self.data['RSI'] = rsi
 
+        # Add to the graph
         self.figure3.add_trace(go.Scatter(x=self.data.index, y= self.data['RSI'], line=dict(color='grey', width=1.5), name = 'RSI'))
 
     
@@ -106,9 +109,9 @@ class Market_Data():
                 # These are buttons that can be used to break down the graph
 
                 buttons=list([
-                    dict(count=3, label="3d", step="day", stepmode="backward"),
+                    dict(count=1, label="1d", step="day", stepmode="backward"),
                     dict(count=5, label="5d", step="day", stepmode="backward"),
-                    dict(count=7, label="WTD", step="day", stepmode="todate"),
+                    dict(count=7, label="Week", step="day", stepmode="todate"),
                     dict(step="all")
                 ])
             )
@@ -128,15 +131,17 @@ class Market_Data():
 
 
 if __name__ == '__main__':
-    data = Market_Data('BTC-USD', '8d', '90m')
+    data = Market_Data('BTC-USD', '5d', '1m')
 
+    # Adds the market indicatiors
     data.bollinger_bands()
+    # Not sure what the difference between simple or exp
     data.rsi(simple=False)
     data.macd()
 
+    # Creates and shows the figure
     data.create_figure()
     data.show_figure()
 
-    
-
-    print(data.get_table_values())
+    # Prints out the data table
+    data.print_data()
