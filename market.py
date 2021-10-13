@@ -125,9 +125,9 @@ class Market_Data():
         self.figure3.show()
 
     
-    def get_table_values(self):
-        return self.data
+    def get_table_values_csv(self):
 
+        self.data.to_csv('data.csv')
 
 
 if __name__ == '__main__':
@@ -145,3 +145,5 @@ if __name__ == '__main__':
 
     # Prints out the data table
     data.print_data()
+
+    data.get_table_values_csv()
