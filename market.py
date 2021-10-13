@@ -14,6 +14,9 @@ class Market_Data():
         # Get the data set
         self.data = yf.download(tickers=ticker, period=period, interval=interval)
 
+        #Create figure
+        self.figure = go.Figure()
+
 
     # Print the table
     def print_data(self):
@@ -35,28 +38,49 @@ class Market_Data():
         self.data['BollingerU'] = bollinger_uppper
         self.data['BollingerL'] = bollinger_lower
 
-    def rsi(self):
-        pass
+        #Add Bollinger on the graph
+        self.figure.add_trace(go.Scatter(x=self.data.index, y= self.data['BollingerU'], line=dict(color='blue', width=1.5), name = 'Upper Bollinger'))
+        self.figure.add_trace(go.Scatter(x=self.data.index, y= self.data['BollingerL'], line=dict(color='orange', width=1.5), name = 'Lower Bollinger'))
+
+
+    def rsi(self, periods=14, simple=True):
+        
+        closing_delta = self.data['Close'].diff()
+
+        # Get upper and lower bands
+        up = closing_delta.clip(lower=0)
+        down = -1 * closing_delta.clip(upper=0)
+
+        if simple == False:
+            # Exponential moving average
+            moving_average_up = up.ewm(com = periods - 1, min_periods = periods).mean()
+            moving_average_down = down.ewm(com = periods - 1, min_periods = periods).mean()
+        else:
+            # Simple moving average
+            moving_average_up = up.rolling(window = periods).mean()
+            moving_average_down = down.rolling(window = periods).mean()
+        
+        rsi = moving_average_up / moving_average_down
+        rsi = 100 - (100/(1 + rsi))
+
+        self.data['RSI'] = rsi
+
+        self.figure.add_trace(go.Scatter(x=self.data.index, y= self.data['RSI'], line=dict(color='purple', width=1.5), name = 'RSI'))
 
     
     def create_figure(self):
-        #Create figure
-        figure = go.Figure()
 
         # Create the candle sticks
-        figure.add_trace(go.Candlestick(x=self.data.index,
+        self.figure.add_trace(go.Candlestick(x=self.data.index,
                         open=self.data['Open'],
                         high=self.data['High'],
                         low=self.data['Low'],
                         close=self.data['Close'], name = 'market data'))
 
-        #Add Bollinger on the graph
-        figure.add_trace(go.Scatter(x=self.data.index, y= self.data['BollingerU'], line=dict(color='blue', width=1.5), name = 'Upper Bollinger'))
-        figure.add_trace(go.Scatter(x=self.data.index, y= self.data['BollingerL'], line=dict(color='orange', width=1.5), name = 'Lower Bollinger'))
 
         #Updating X axis and graph
         # X-Axes
-        figure.update_xaxes(
+        self.figure.update_xaxes(
             # This creates a range slider
             rangeslider_visible=True,
             rangeselector=dict(
@@ -72,12 +96,10 @@ class Market_Data():
             )
         )
 
-        return figure
 
-
-    def show_figure(self, figure):
+    def show_figure(self):
         # Present figure
-        figure.show()
+        self.figure.show()
 
     
     def get_table_values(self):
@@ -91,12 +113,13 @@ if __name__ == '__main__':
     data.print_data()
 
     data.bollinger_bands()
+    data.rsi(simple=False)
 
     data.print_data()
 
 
-    figure = data.create_figure()
-    data.show_figure(figure)
+    data.create_figure()
+    data.show_figure()
 
     
 
