@@ -138,8 +138,9 @@ class Market_Data():
 
         # change labels
         self.other_figs.update_yaxes(title_text="Price", row=1, col=1)
-        self.other_figs.update_yaxes(title_text="Price", row=2, col=1)
+        self.other_figs.update_yaxes(title_text="Moving Average", row=2, col=1)
         self.other_figs.update_yaxes(title_text="MACD", showgrid=False, row=3, col=1)
+        self.other_figs.update_yaxes(title_text="RSI", row=4, col=1)
 
 
     def show_figure(self):
