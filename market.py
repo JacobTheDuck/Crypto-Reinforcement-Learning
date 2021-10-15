@@ -3,6 +3,8 @@ import pandas as pd
 import yfinance as yf
 import plotly.graph_objs as go
 from plotly.subplots import make_subplots
+from ta.trend import MACD
+from ta.momentum import StochasticOscillator
 
 class Market_Data():
 
@@ -16,9 +18,11 @@ class Market_Data():
         self.data = yf.download(tickers=ticker, period=period, interval=interval)
 
         # Create figure
-        self.figure1 = go.Figure()
-        self.figure2 = go.Figure()
-        self.figure3 = go.Figure()
+        # add subplot properties when initializing fig variable
+        self.other_figs = make_subplots(rows=4, cols=1,
+                                         shared_xaxes=True,
+                                         vertical_spacing=.02,
+                                         row_heights=[0.6,0.3,0.2,0.2])
 
 
     # Print the table
@@ -42,24 +46,55 @@ class Market_Data():
         self.data['BollingerL'] = bollinger_lower
 
         #Add Bollinger on the graph
-        self.figure1.add_trace(go.Scatter(x=self.data.index, y= self.data['BollingerU'], line=dict(color='blue', width=1.5), name = 'Upper Bollinger'))
-        self.figure1.add_trace(go.Scatter(x=self.data.index, y= self.data['BollingerL'], line=dict(color='orange', width=1.5), name = 'Lower Bollinger'))
+        self.other_figs.add_trace(go.Scatter(x=self.data.index, 
+                                y= self.data['BollingerU'],
+                                line=dict(color='blue', width=1.5),
+                                 name = 'Upper Bollinger'))
+
+        self.other_figs.add_trace(go.Scatter(x=self.data.index,
+                                 y= self.data['BollingerL'],
+                                 line=dict(color='orange', width=1.5),
+                                 name = 'Lower Bollinger'))
+
+
+    def moving_averages(self):
+        self.data['MA20'] = self.data['Close'].rolling(window=20).mean()
+        self.data['MA5'] = self.data['Close'].rolling(window=5).mean()
+
+        # Add the moving averages
+        self.other_figs.add_trace(go.Scatter(x=self.data.index, 
+                         y=self.data['MA5'], 
+                         opacity=0.7, 
+                         line=dict(color='blue', width=2), 
+                         name='MA 5'), row=2, col=1)
+        self.other_figs.add_trace(go.Scatter(x=self.data.index, 
+                         y=self.data['MA20'], 
+                         opacity=0.7, 
+                         line=dict(color='orange', width=2), 
+                         name='MA 20'), row=2, col=1)
 
     # MACD
     def macd(self):
 
-        exp1 = self.data['Close'].ewm(span=12, adjust=False).mean()
-        exp2 = self.data['Close'].ewm(span=26, adjust=False).mean()
+        # MACD
+        macd = MACD(close=self.data['Close'], 
+                    window_slow=26,
+                    window_fast=12, 
+                    window_sign=9)
 
-        macd = exp1-exp2
-        exp3 = macd.ewm(span=9, adjust=False).mean()
-
-        self.data['MACD'] = macd
-
-        # Add to graph
-        self.figure2.add_trace(go.Scatter(x=self.data.index, y= exp3, line=dict(color='green', width=1.5), name = 'EXPMACD'))
-        self.figure2.add_trace(go.Scatter(x=self.data.index, y= self.data['MACD'], line=dict(color='purple', width=1.5), name = 'MACD'))
-
+        # Plot MACD trace on 3rd row
+        self.other_figs.add_trace(go.Bar(x=self.data.index, 
+                            y=macd.macd_diff()
+                            ), row=3, col=1)
+        self.other_figs.add_trace(go.Scatter(x=self.data.index,
+                                y=macd.macd(),
+                                line=dict(color='black', width=2)
+                                ), row=3, col=1)
+        self.other_figs.add_trace(go.Scatter(x=self.data.index,
+                                y=macd.macd_signal(),
+                                line=dict(color='blue', width=1)
+                                ), row=3, col=1)
+        
 
     # RSI can be set to simple or expontinal rsi
     def rsi(self, periods=14, simple=True):
@@ -86,43 +121,30 @@ class Market_Data():
         self.data['RSI'] = rsi
 
         # Add to the graph
-        self.figure3.add_trace(go.Scatter(x=self.data.index, y= self.data['RSI'], line=dict(color='grey', width=1.5), name = 'RSI'))
+        self.other_figs.add_trace(go.Scatter(x=self.data.index, y= self.data['RSI'], line=dict(color='grey', width=1.5), name = 'RSI'), row=4, col=1)
 
     
     def create_figure(self):
 
         # Create the candle sticks
-        self.figure1.add_trace(go.Candlestick(x=self.data.index,
+        self.other_figs.add_trace(go.Candlestick(x=self.data.index,
                         open=self.data['Open'],
                         high=self.data['High'],
                         low=self.data['Low'],
                         close=self.data['Close'], name = 'market data'))
 
+        # remove rangeslider
+        self.other_figs.update_layout(xaxis_rangeslider_visible=False)
 
-        #Updating X axis and graph
-        # X-Axes
-        self.figure1.update_xaxes(
-            # This creates a range slider
-            rangeslider_visible=True,
-            rangeselector=dict(
-
-                # These are buttons that can be used to break down the graph
-
-                buttons=list([
-                    dict(count=1, label="1d", step="day", stepmode="backward"),
-                    dict(count=5, label="5d", step="day", stepmode="backward"),
-                    dict(count=7, label="Week", step="day", stepmode="todate"),
-                    dict(step="all")
-                ])
-            )
-        )
+        # change labels
+        self.other_figs.update_yaxes(title_text="Price", row=1, col=1)
+        self.other_figs.update_yaxes(title_text="Price", row=2, col=1)
+        self.other_figs.update_yaxes(title_text="MACD", showgrid=False, row=3, col=1)
 
 
     def show_figure(self):
         # Present figure
-        self.figure1.show()
-        self.figure2.show()
-        self.figure3.show()
+        self.other_figs.show()
 
     
     def get_table_values_csv(self):
@@ -131,13 +153,14 @@ class Market_Data():
 
 
 if __name__ == '__main__':
-    data = Market_Data('BTC-USD', '5d', '1m')
+    data = Market_Data('BTC-USD', '5d', '60m')
 
     # Adds the market indicatiors
     data.bollinger_bands()
     # Not sure what the difference between simple or exp
     data.rsi(simple=False)
     data.macd()
+    data.moving_averages()
 
     # Creates and shows the figure
     data.create_figure()
