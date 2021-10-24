@@ -29,6 +29,11 @@ class Market_Data():
     def print_data(self):
         print(self.data)
 
+    # This will make it eaiser than reading the csv you will have direct access to the parts like what I have highlighted
+    # I forgot to add this method
+    def get_data(self):
+        return self.data
+
 
     def bollinger_bands(self):
         # 20 day sma
@@ -154,7 +159,7 @@ class Market_Data():
 
 
 if __name__ == '__main__':
-    data = Market_Data('BTC-USD', '5d', '60m')
+    data = Market_Data('BTC-USD', '5d', '5m')
 
     # Adds the market indicatiors
     data.bollinger_bands()
