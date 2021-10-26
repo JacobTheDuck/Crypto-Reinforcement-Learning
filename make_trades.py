@@ -5,15 +5,18 @@ be used to estimate the returns and update the Q_table.
 
 import csv
 import random
+import matplotlib.pyplot as plt
+import numpy as np
 
 GAMMA = 0.1
 EPSILON = 1
 EPSILON_DECAY = .997
-N_EPISODES = 1
+N_EPISODES = 100
 STARTING_BALANCE = 1000
 AMOUNT_PER_TRADE = 100
 
 csv_index = 0
+random_rewards = []
 
 #q_table, just a list of state objects.
 q_table = []
@@ -120,12 +123,13 @@ def add_to_returns_and_policy(current_state, returns, policy):
             returns[current_state, action] = []
 
 def get_reward(action, current_state, trade_amount):
+    global STARTING_BALANCE
     reward = 0
     if action == 'Buy':
         reward = -AMOUNT_PER_TRADE
     elif action == 'Sell':
         reward = trade_amount * float(current_state.open)
-    print(reward)
+    STARTING_BALANCE += reward
     return reward
 
 
@@ -236,6 +240,11 @@ def train_monte_carlo(data, episodes = 10000):
             action = max(state.actions.values())
             policy[state] = action
 
+        global STARTING_BALANCE
+        random_rewards.append(STARTING_BALANCE)
+        STARTING_BALANCE = 1000
+
+
     return policy
 
 if __name__ == "__main__":
@@ -246,6 +255,13 @@ if __name__ == "__main__":
     epsilon = 1
 
     train_monte_carlo(data, N_EPISODES)
+
+    # Plot the random one
+    xpoints = np.array(range(N_EPISODES))
+    ypoints = np.array(random_rewards)
+
+    plt.plot(xpoints, ypoints)
+    plt.show()
 
     # Generate episode using data.
     # generate_episode(data, epsilon)
