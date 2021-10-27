@@ -11,7 +11,7 @@ import numpy as np
 GAMMA = 0.1
 EPSILON = 1
 EPSILON_DECAY = .997
-N_EPISODES = 100
+N_EPISODES = 1000
 STARTING_BALANCE = 1000
 AMOUNT_PER_TRADE = 100
 
@@ -129,7 +129,6 @@ def get_reward(action, current_state, trade_amount):
         reward = -AMOUNT_PER_TRADE
     elif action == 'Sell':
         reward = trade_amount * float(current_state.open)
-    STARTING_BALANCE += reward
     return reward
 
 
@@ -163,6 +162,8 @@ def generate_episode(data_list_dicts, epsilon, policy, returns):
 
         # Do action and take us to new state.
         reward = get_reward(action, current_state, trade_amount)
+        global STARTING_BALANCE
+        STARTING_BALANCE += reward
 
         states_actions_rewards.append((current_state, action, reward))
         current_state = change_state(current_state, action, data_list_dicts)
@@ -216,6 +217,7 @@ def train_monte_carlo(data, episodes = 10000):
         print("Episode: {}".format(i))
 
         # Generate an episode
+        print(epsilon)
         states_actions_returns = generate_episode(data, epsilon, policy, returns)
         if epsilon > .05:
             epsilon = epsilon * EPSILON_DECAY
@@ -240,12 +242,61 @@ def train_monte_carlo(data, episodes = 10000):
             action = max(state.actions.values())
             policy[state] = action
 
+
         global STARTING_BALANCE
         random_rewards.append(STARTING_BALANCE)
         STARTING_BALANCE = 1000
 
 
     return policy
+
+def test(data_list_dicts, epsilon, policy, returns):
+    global csv_index
+    csv_index = 0
+    trade_amount = 0
+
+    # Initialize empty list for states_actions_rewards
+    states_actions_rewards = list()
+
+    # Find first day where all values are instantiated.
+    start_state = find_start_day(data_list_dicts)
+
+    # End state is the final time period of the data.
+    end_state = State(data_list_dicts[-1])
+
+    # While final state has not been reached.
+    current_state = start_state
+    action = get_action(current_state, epsilon) # Initialize first action
+
+    start = STARTING_BALANCE
+
+    while (current_state != end_state):
+        # print(current_state.get_self())
+
+        # Add current state to returns and policy.
+        add_to_returns_and_policy(current_state, returns, policy)
+
+        # Get trade details
+        if action == 'Buy':
+            trade_amount = AMOUNT_PER_TRADE / float(current_state.open)
+
+        # Do action and take us to new state.
+        reward = get_reward(action, current_state, trade_amount)
+        start += reward
+
+        current_state = change_state(current_state, action, data_list_dicts)
+
+        if csv_index == len(data_list_dicts) - 1:
+            current_state = end_state
+
+        add_to_returns_and_policy(current_state, returns, policy)
+
+        if action == 'Sell':
+            trade_amount = 0
+
+        action = get_action(current_state, policy, epsilon)
+
+    return start
 
 if __name__ == "__main__":
     # Get the data into a list of dicts.
@@ -254,11 +305,18 @@ if __name__ == "__main__":
     # These variables will be in the train monte carlo bit.
     epsilon = 1
 
-    train_monte_carlo(data, N_EPISODES)
+    policy = train_monte_carlo(data, N_EPISODES)
+
+    returns = {}
+
+    print(test(data, 0, policy, returns))
+
 
     # Plot the random one
     xpoints = np.array(range(N_EPISODES))
     ypoints = np.array(random_rewards)
+    plt.xlabel("Number of Episodes")
+    plt.ylabel("Final Portfolio Value")
 
     plt.plot(xpoints, ypoints)
     plt.show()
